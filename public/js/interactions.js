@@ -92,6 +92,16 @@ document.addEventListener('mousemove', (e) => {
     tip.style.top = (e.clientY + 16) + 'px';
     return;
   }
+  // Over a span bar: show what it is (tool name + target, or turn kind).
+  const bar = e.target.closest('.bar');
+  if (bar && bar._span && view && tip) {
+    tip.innerHTML = barTipHtml(bar._span, view.tMax - view.tMin);
+    tip.style.display = 'block';
+    tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 280) + 'px';
+    tip.style.top = (e.clientY + 16) + 'px';
+    if (cursor) cursor.style.display = 'none';
+    return;
+  }
   const g = trackGeom();
   if (!e.target.closest('.track') || !chartState || !view || !g || !g.width || e.clientX < g.left) {
     if (tip) tip.style.display = 'none';

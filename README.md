@@ -86,9 +86,37 @@ Spans come from the transcript's event timestamps, with an **idle threshold** (`
 
 - **agent working** — from a prompt through the agent's messages/tool calls, split wherever
   there is a gap longer than the threshold.
-- **user reading / typing** — the gap between the agent finishing and the next prompt,
-  **capped** at the threshold; longer gaps are idle and left blank.
-- **tool / subagent** — exact, from each `tool_use` to its `tool_result`.
+- **tool / subagent** — exact, from each `tool_use` to its `tool_result`. Tools that block on
+  a human (currently `AskUserQuestion`) are capped at **1 min** so waiting for the answer
+  isn't drawn as tool work.
+- **user reading / typing** — *estimated*, because Claude Code logs no keyboard signal (see
+  below).
+
+### Estimating user time
+
+The transcript records when each prompt is submitted and every agent event, but nothing about
+what the human did in between — no keystrokes, no focus, no "typing" flag. `lib/user-activity.mjs`
+models the gap between the agent finishing and the next prompt as **reading → idle → typing**
+(a person does one thing at a time, so the two spans never overlap):
+
+- **typing** — a prompt is sent the instant enter is pressed, so submission is the *end* of
+  typing. We walk back from it by an estimate from the prompt's length (~40 wpm). Typing is
+  anchored to the prompt and takes precedence over reading.
+- **reading** — right after the agent stops, sized by how much text the agent produced
+  (~200 wpm) and **capped at 2 min**, so a long pause isn't shown as active reading.
+- **idle** — whatever is left in the middle stays blank: "thinking at the keyboard" and "away
+  from the desk" are indistinguishable in the logs, so no activity is invented there.
+
+A person also attends to **one session at a time**, yet each transcript is modelled on its
+own — so the estimates from sessions running in parallel would otherwise overlap in
+wall-clock time, which is impossible. A final pass (`resolveUserAttention`) lays every user
+span on one shared "attention" timeline and trims the collisions: typing (anchored to a real
+prompt) outranks estimated reading, and an earlier span keeps its window while a later one is
+pushed into the free time — a reading span can even be split when a quick prompt to another
+session lands in its middle. Agent/tool spans are left alone: agents genuinely do run at once.
+
+The speed and cap constants live together at the top of `lib/user-activity.mjs` — tune them in
+one place. Remember these spans are **estimates, not measurements**.
 
 Concurrency metrics use each session's merged agent-working intervals, so "parallel" means
 *actually running at the same time*, not merely open.
@@ -100,6 +128,7 @@ claude-session-timeline/
 ├── server.mjs              # zero-dep HTTP server: static + /api/data + /api/stream (SSE); fs.watch
 ├── lib/
 │   ├── parse.mjs           # one transcript .jsonl → span lanes (agent / user / tool / subagent)
+│   ├── user-activity.mjs   # estimates user reading/typing time (no keyboard signal in the logs)
 │   └── scan.mjs            # scan sessions + subagents, overlay live status, group by cwd (mtime-cached)
 ├── public/
 │   ├── index.html          # markup only

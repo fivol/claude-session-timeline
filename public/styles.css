@@ -3,7 +3,7 @@
   --text: #e6e9ef; --muted: #8b93a3; --grid: #232732;
   --agent: #4c8dff; --user: #f2b13c; --tool: #3ecf8e; --subagent: #b388ff;
   --busy: #3ecf8e; --waiting: #f2b13c; --idle: #6b7280; --now: #ff5d6c;
-  --topbar-h: 320px;
+  --topbar-h: 342px;
 }
 @media (prefers-color-scheme: light) {
   :root {
@@ -33,7 +33,8 @@ h1 { font-size: 14px; margin: 0; font-weight: 650; white-space: nowrap; }
 @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(62,207,142,.5)} 70%{box-shadow:0 0 0 6px rgba(62,207,142,0)} 100%{box-shadow:0 0 0 0 rgba(62,207,142,0)} }
 
 /* month calendar heatmap (always visible) */
-.heat { padding: 8px 16px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.heat { padding: 18px 16px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center; }
 .calnav { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .calnav .caltitle { font-weight: 600; font-size: 13px; min-width: 140px; text-align: center; }
 .calnav button { background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
@@ -118,3 +119,7 @@ h1 { font-size: 14px; margin: 0; font-weight: 650; white-space: nowrap; }
   border-radius: 6px; padding: 5px 9px; font-size: 12px; pointer-events: none; white-space: nowrap;
   box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.5; }
 #tip b { color: var(--agent); }
+#tip strong { color: var(--text); font-weight: 650; }
+#tip .tipsw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+#tip .tipkind { color: var(--muted); font-size: 11px; }
+#tip .tipwarn { color: var(--now); }

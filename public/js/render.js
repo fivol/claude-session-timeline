@@ -1,11 +1,25 @@
 // Timeline rendering: ruler, rows, subagents, the avg-parallel chart, stats bar.
 
+// "Nice" ruler steps, aligned to round clock times (…, 15m, 30m, 1h, …).
+const RULER_STEPS = [
+  60e3, 2 * 60e3, 5 * 60e3, 10 * 60e3, 15 * 60e3, 30 * 60e3,
+  60 * 60e3, 2 * 60 * 60e3, 3 * 60 * 60e3, 6 * 60 * 60e3, 12 * 60 * 60e3,
+  24 * 3600e3, 2 * 24 * 3600e3, 7 * 24 * 3600e3, 14 * 24 * 3600e3,
+];
+function rulerStep(span, target) {
+  for (const s of RULER_STEPS) if (span / s <= target) return s;
+  return RULER_STEPS[RULER_STEPS.length - 1];
+}
+const localMidnight = (ts) => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
+
 function ruler(tMin, tMax) {
   const track = document.createElement('div');
   track.className = 'track ruler';
   const span = tMax - tMin;
-  for (let i = 0; i <= 8; i++) {
-    const t = tMin + (span * i) / 8;
+  const step = rulerStep(span, 9);
+  // Align ticks to the local-midnight grid so they land on round clock times.
+  const base = localMidnight(tMin);
+  for (let t = base + Math.ceil((tMin - base) / step) * step; t <= tMax; t += step) {
     const tick = document.createElement('div');
     tick.className = 'tick';
     tick.style.left = pct(t, tMin, tMax) + '%';
@@ -34,9 +48,34 @@ function addBars(track, spans, tMin, tMax, span, isSub) {
     bar.className = `bar ${isTurn ? 'turn' : 'sub'} ${laneClass}${sp.isError ? ' err' : ''}`;
     bar.style.left = left + '%';
     bar.style.width = Math.max(0.3, right - left) + '%';
-    bar.title = `${sp.lane}${sp.label ? ' · ' + sp.label : ''}\n${fmt(sp.start, span)} → ${fmt(sp.end, span)} (${dur(sp.end - sp.start)})`;
+    bar._span = sp; // read by the hover handler to build a rich tooltip
     track.appendChild(bar);
   }
+}
+
+// Rich hover tooltip for a single span bar (tool, subagent, agent or user).
+const LANE_COLOR = { tool: 'var(--tool)', subagent: 'var(--subagent)', agent: 'var(--agent)', user: 'var(--user)' };
+function barTipHtml(sp, span) {
+  const sw = `<i class="tipsw" style="background:${LANE_COLOR[sp.lane] || 'var(--muted)'}"></i>`;
+  const time = `${fmt(sp.start, span)} → ${fmt(sp.end, span)} · ${dur(sp.end - sp.start)}`;
+  let head, kind = '', target = '';
+  if (sp.lane === 'tool' || sp.lane === 'subagent') {
+    head = escapeHtml(sp.tool || sp.label || sp.lane);
+    kind = sp.lane === 'subagent' ? 'subagent' : 'tool';
+    target = (sp.tool && sp.label) ? sp.label.slice(sp.tool.length).trim() : '';
+  } else if (sp.lane === 'agent') {
+    head = 'agent working';
+  } else {
+    head = sp.label === 'typing' ? 'user typing' : 'user reading';
+    if (sp.label) kind = 'estimated';
+  }
+  let html = `${sw}<strong>${head}</strong>`;
+  if (kind) html += ` <span class="tipkind">${kind}</span>`;
+  if (target) html += `<br>${escapeHtml(target)}`;
+  html += `<br>${time}`;
+  if (sp.isError) html += ` · <span class="tipwarn">error</span>`;
+  if (sp.open) html += ' · running…';
+  return html;
 }
 
 function nowLine(track, now, tMin, tMax) {
