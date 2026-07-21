@@ -1,0 +1,13 @@
+{
+  "name": "claude-session-timeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Live Gantt of Claude Code sessions, grouped by working directory, read straight from the local transcripts.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

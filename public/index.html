@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Claude Code — Session Timeline</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="topbar">
+    <header>
+      <h1>Claude Code · Session Timeline</h1>
+      <div class="windows" id="windows"></div>
+      <div class="spacer"></div>
+      <div class="live"><span class="dot" id="livedot"></span><span id="livetext">connecting…</span></div>
+    </header>
+    <div class="heat" id="heat"></div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--agent)"></i>agent working</span>
+      <span><i class="swatch" style="background:repeating-linear-gradient(45deg,var(--user),var(--user) 3px,transparent 3px,transparent 6px)"></i>user reading / typing</span>
+      <span><i class="swatch" style="background:var(--tool)"></i>tool</span>
+      <span><i class="swatch" style="background:var(--subagent)"></i>subagent</span>
+      <span><i class="swatch" style="background:var(--now)"></i>now</span>
+      <span class="hint">pinch / ⌥-wheel = zoom · two-finger ↔ = pan · drag timeline = select range</span>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div id="chart"></div>
+  <div class="board" id="board"><div class="empty">loading…</div></div>
+
+  <script src="js/format.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/metrics.js"></script>
+  <script src="js/heatmap.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/interactions.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

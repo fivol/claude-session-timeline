@@ -1,0 +1,9 @@
+# runtime
+server.log
+*.log
+
+# node
+node_modules/
+
+# macOS
+.DS_Store
