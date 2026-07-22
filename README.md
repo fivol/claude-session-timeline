@@ -10,22 +10,37 @@ concurrency chart, a per-day activity heatmap, and drag-selectable stats.
 
 ![Session timeline dashboard](docs/screenshots/overview.png)
 
-## Why not hooks?
+## Features
 
-Claude Code already writes every event — user prompts, assistant turns, tool calls and
-results — with ISO timestamps into `~/.claude/projects/<dir>/<sessionId>.jsonl`, *live* as a
-session runs. This server tails those files, so there is nothing to install into your Claude
-Code config.
+- **Live Gantt of every session** — all your Claude Code sessions on one shared time axis,
+  grouped by working directory, read straight from the `~/.claude/` transcripts. No hooks,
+  no config changes, zero dependencies.
+- **Four span lanes per session** — *agent working*, *user reading / typing* (estimated),
+  every *tool* call, and every *subagent (Task)* run, all on the same axis.
+- **Live updates over SSE** — the server tails `~/.claude/{projects,sessions,jobs}` and pushes
+  a change event, so the board redraws as sessions run; each row shows live status
+  (working / awaiting input / idle).
+- **Concurrency at a glance** — an avg-parallel chart above the timeline plus a stats bar
+  (max / avg parallel, any-agent-active wall-clock, agent-hours, working-now) that recomputes
+  for the visible window or any drag-selected range.
+- **Day heatmap** — a month calendar with one square per day (brighter = more agent-active
+  time); hover for a day's stats, click or drag to open a day or a range.
+- **Navigate freely** — time-window presets + Live mode, pinch / ⌥-wheel zoom, two-finger pan,
+  drag-to-select a range, and a hover crosshair with instant / avg parallel counts.
+- **Subagents & per-session totals** — expand any session with `Task` runs to see each
+  subagent as its own row; a line under each session reads `active · agent · user` time.
+- **Estimated user time** — reading / typing spans modelled from prompt length and agent
+  output (Claude Code logs no keyboard signal), then de-conflicted so sessions running in
+  parallel never claim the same person at the same moment.
+- **Autostart on macOS** — an optional LaunchAgent runs the server at login and restarts it on
+  crash.
 
-### What it can and cannot show
+### What it can't show
 
-- **Shown:** agent working, user reading / typing (the gap between turns), each tool call,
-  subagent (Task) runs, session start/end, live status (working / awaiting input / idle),
-  and — because every session logs separately — which directory/task was active when.
-- **Not shown:** pure passive viewing/scrolling and switching chats in FleetView *without
-  acting*. Claude Code records no TUI focus/navigation events anywhere (confirmed: even its
-  internal telemetry has none), so no tool can reconstruct it. Idle time between turns is
-  therefore left blank rather than guessed at.
+Pure passive viewing / scrolling and switching chats in FleetView *without acting* leave no
+trace: Claude Code records no TUI focus/navigation events anywhere (confirmed — even its
+internal telemetry has none), so no tool can reconstruct them. Idle time between turns is left
+blank rather than guessed at.
 
 ## Run
 

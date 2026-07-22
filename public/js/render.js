@@ -48,26 +48,28 @@ function addBars(track, spans, tMin, tMax, span, isSub) {
     bar.className = `bar ${isTurn ? 'turn' : 'sub'} ${laneClass}${sp.isError ? ' err' : ''}`;
     bar.style.left = left + '%';
     bar.style.width = Math.max(0.3, right - left) + '%';
-    bar._span = sp; // read by the hover handler to build a rich tooltip
+    bar._span = sp;              // read by the hover handler to build a rich tooltip
+    bar._laneClass = laneClass;  // effective color class (subagent's agent span → subagent)
     track.appendChild(bar);
   }
 }
 
-// Rich hover tooltip for a single span bar (tool, subagent, agent or user).
-const LANE_COLOR = { tool: 'var(--tool)', subagent: 'var(--subagent)', agent: 'var(--agent)', user: 'var(--user)' };
-function barTipHtml(sp, span) {
-  const sw = `<i class="tipsw" style="background:${LANE_COLOR[sp.lane] || 'var(--muted)'}"></i>`;
+// Rich hover tooltip for a single span bar (tool, subagent, agent or user). The
+// swatch reuses the bar's own lane class so CSS is the single source of colour.
+function barTipHtml(sp, span, laneClass) {
+  const sw = `<i class="tipsw ${laneClass || sp.lane}"></i>`;
   const time = `${fmt(sp.start, span)} → ${fmt(sp.end, span)} · ${dur(sp.end - sp.start)}`;
   let head, kind = '', target = '';
   if (sp.lane === 'tool' || sp.lane === 'subagent') {
     head = escapeHtml(sp.tool || sp.label || sp.lane);
-    kind = sp.lane === 'subagent' ? 'subagent' : 'tool';
+    kind = sp.lane;
     target = (sp.tool && sp.label) ? sp.label.slice(sp.tool.length).trim() : '';
   } else if (sp.lane === 'agent') {
     head = 'agent working';
   } else {
+    // 'reading' / 'typing' — labels emitted by gapSpans/leadInSpans in lib/user-activity.mjs
     head = sp.label === 'typing' ? 'user typing' : 'user reading';
-    if (sp.label) kind = 'estimated';
+    kind = 'estimated';
   }
   let html = `${sw}<strong>${head}</strong>`;
   if (kind) html += ` <span class="tipkind">${kind}</span>`;

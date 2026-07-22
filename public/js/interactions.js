@@ -8,6 +8,16 @@ function timeAtX(cx) {
   return view.tMin + clamp((cx - g.left) / g.width, 0, 1) * (view.tMax - view.tMin);
 }
 
+// Fill and show the shared tooltip near the cursor, clamped to the viewport by maxW.
+function showTip(html, e, maxW) {
+  const tip = document.getElementById('tip');
+  if (!tip) return;
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+  tip.style.left = Math.min(e.clientX + 14, window.innerWidth - maxW) + 'px';
+  tip.style.top = (e.clientY + 16) + 'px';
+}
+
 // pinch / ⌥-wheel = zoom; two-finger horizontal = pan; vertical = normal page scroll.
 document.addEventListener('wheel', (e) => {
   if (!view) return;
@@ -86,19 +96,13 @@ document.addEventListener('mousemove', (e) => {
       lines.push(`agent-hours ${dur(info.agentMs)} · user ${dur(info.userMs)}`);
       lines.push(`${info.prompts} prompt${info.prompts === 1 ? '' : 's'}`);
     } else lines.push('no activity');
-    tip.innerHTML = lines.join('<br>');
-    tip.style.display = 'block';
-    tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 190) + 'px';
-    tip.style.top = (e.clientY + 16) + 'px';
+    showTip(lines.join('<br>'), e, 190);
     return;
   }
   // Over a span bar: show what it is (tool name + target, or turn kind).
   const bar = e.target.closest('.bar');
-  if (bar && bar._span && view && tip) {
-    tip.innerHTML = barTipHtml(bar._span, view.tMax - view.tMin);
-    tip.style.display = 'block';
-    tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 280) + 'px';
-    tip.style.top = (e.clientY + 16) + 'px';
+  if (bar && bar._span && view) {
+    showTip(barTipHtml(bar._span, view.tMax - view.tMin, bar._laneClass), e, 280);
     if (cursor) cursor.style.display = 'none';
     return;
   }
@@ -116,10 +120,7 @@ document.addEventListener('mousemove', (e) => {
   const d = new Date(t);
   const rowName = e.target.closest('.row') && e.target.closest('.row').querySelector('.name');
   const prefix = rowName ? `${escapeHtml(rowName.textContent)}<br>` : '';
-  tip.innerHTML = `${prefix}${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())} · ∥ <b>${inst}</b> now · avg ${avg.toFixed(2)}`;
-  tip.style.display = 'block';
-  tip.style.left = Math.min(e.clientX + 14, window.innerWidth - 240) + 'px';
-  tip.style.top = (e.clientY + 16) + 'px';
+  showTip(`${prefix}${p2(d.getHours())}:${p2(d.getMinutes())}:${p2(d.getSeconds())} · ∥ <b>${inst}</b> now · avg ${avg.toFixed(2)}`, e, 240);
   const chartTop = document.getElementById('chart').getBoundingClientRect().top;
   const top = Math.max(0, chartTop);
   cursor.style.display = 'block';

@@ -120,6 +120,10 @@ h1 { font-size: 14px; margin: 0; font-weight: 650; white-space: nowrap; }
   box-shadow: 0 4px 14px rgba(0,0,0,.35); line-height: 1.5; }
 #tip b { color: var(--agent); }
 #tip strong { color: var(--text); font-weight: 650; }
-#tip .tipsw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+#tip .tipsw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: middle; margin-right: 6px; background: var(--muted); }
+#tip .tipsw.agent { background: var(--agent); }
+#tip .tipsw.tool { background: var(--tool); }
+#tip .tipsw.subagent { background: var(--subagent); }
+#tip .tipsw.user { background: repeating-linear-gradient(45deg, var(--user), var(--user) 3px, transparent 3px, transparent 6px); }
 #tip .tipkind { color: var(--muted); font-size: 11px; }
 #tip .tipwarn { color: var(--now); }
