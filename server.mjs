@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { collectData } from './lib/scan.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PORT = process.env.PORT || 4177;
+const DEFAULT_PORT = 4177;
+const ENV_PORT = process.env.PORT ? Number(process.env.PORT) : null;
 const HOME = os.homedir();
 const WATCH_DIRS = [
   path.join(HOME, '.claude', 'projects'),
@@ -73,14 +74,29 @@ const server = http.createServer((req, res) => {
   res.end('not found');
 });
 
-server.on('error', (e) => {
-  if (e.code === 'EADDRINUSE') {
-    console.error(`port ${PORT} already in use — another instance is running. Exiting.`);
-    process.exit(1);
-  }
-  throw e;
+server.on('listening', () => {
+  console.log(`Claude session timeline → http://localhost:${server.address().port}`);
 });
 
-server.listen(PORT, () => {
-  console.log(`Claude session timeline → http://localhost:${PORT}`);
-});
+// Bind to `port`. When `fallback` is set (no PORT env given), a busy port isn't
+// fatal — we retry on port 0 so the OS hands us any free one. An explicit PORT
+// env is treated as a hard requirement: if it's taken, we fail loudly.
+function listen(port, fallback) {
+  server.removeAllListeners('error');
+  server.once('error', (e) => {
+    if (e.code === 'EADDRINUSE') {
+      if (fallback) {
+        console.error(`port ${port} in use — falling back to a free port`);
+        listen(0, false);
+        return;
+      }
+      console.error(`port ${port} already in use — another instance is running. Exiting.`);
+      process.exit(1);
+    }
+    throw e;
+  });
+  server.listen(port);
+}
+
+if (ENV_PORT) listen(ENV_PORT, false);
+else listen(DEFAULT_PORT, true);

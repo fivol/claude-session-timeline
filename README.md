@@ -47,10 +47,13 @@ blank rather than guessed at.
 ```bash
 cd ~/Documents/Projects/claude-session-timeline
 npm start                 # or: node server.mjs
-# open http://localhost:4177
+# open the URL it prints (http://localhost:4177 when free)
 ```
 
-Change the port with `PORT=5000 npm start`.
+By default the server uses port **4177**, or the next free port the OS hands out if 4177 is
+already taken (running a second instance never collides) — the actual URL is printed on start.
+Pin an exact port with `PORT=5000 npm start`; an explicit port is treated as a hard
+requirement and the server exits if it's busy.
 
 ### Autostart (macOS)
 
