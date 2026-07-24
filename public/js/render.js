@@ -104,6 +104,7 @@ function renderChart(sessions, tMin, tMax, now) {
     vals.push(v); if (v > maxY) maxY = v;
   }
   maxY = Math.max(maxY, 1);
+  const avgY = span > 0 ? prof.integ[prof.integ.length - 1] / span : 0;
   const x = (k) => ((k / N) * WIDTH).toFixed(1);
   const y = (v) => (H - (v / maxY) * (H - 4) - 2).toFixed(1);
   let area = `M 0 ${H} `, line = '';
@@ -113,7 +114,7 @@ function renderChart(sessions, tMin, tMax, now) {
   const nowMark = nowX !== null ? `<line x1="${nowX.toFixed(1)}" y1="0" x2="${nowX.toFixed(1)}" y2="${H}" stroke="var(--now)" stroke-width="2"/>` : '';
   box.innerHTML =
     `<div class="chart-row">` +
-      `<div class="label-col"><span class="t">avg ∥ · peak ${maxY.toFixed(maxY >= 10 ? 0 : 1)}</span><span class="s">window ${dur(W)}</span></div>` +
+      `<div class="label-col"><span class="t">avg ${avgY.toFixed(2)} · peak ${maxY.toFixed(maxY >= 10 ? 0 : 1)}</span><span class="s">window ${dur(W)}</span></div>` +
       `<div class="track chart"><svg viewBox="0 0 ${WIDTH} ${H}" preserveAspectRatio="none">` +
         `<path d="${area}" fill="var(--agent)" opacity="0.28"/>` +
         `<path d="${line}" fill="none" stroke="var(--agent)" stroke-width="1.5"/>` + nowMark +
@@ -137,10 +138,15 @@ function refreshStats() {
   const { max, avg, union } = concurrency(sess, a, b);
   const busy = sess.filter((s) => statusInfo(s).on).length;
   const agentHours = sess.reduce((sum, s) => sum + activeIntervals(s, a, b).reduce((x, [p, q]) => x + (q - p), 0), 0);
+  // User (reading/typing) time, clipped to the window. applyUserAttention already
+  // de-overlaps these across concurrent sessions, so summing them doesn't double-count.
+  const userHours = sess.reduce((sum, s) => sum + s.spans.reduce((x, sp) =>
+    sp.lane === 'user' ? x + Math.max(0, Math.min(sp.end, b) - Math.max(sp.start, a)) : x, 0), 0);
+  const activeAvg = union > 0 ? agentHours / union : 0;
   const pills = [
     ['sessions', sess.length], ['directories', dirs],
-    ['max parallel', max], ['avg parallel', avg.toFixed(2)],
-    ['any-agent active', dur(union)], ['agent-hours', dur(agentHours)],
+    ['max parallel', max], ['avg parallel', avg.toFixed(2)], ['avg while active', activeAvg.toFixed(2)],
+    ['any-agent active', dur(union)], ['agent-hours', dur(agentHours)], ['user-hours', dur(userHours)],
     ['working now', busy],
   ];
   const range = sel

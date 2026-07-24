@@ -32,7 +32,7 @@ for (const dir of WATCH_DIRS) {
   }
 }
 
-const CONTENT_TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
+const CONTENT_TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml' };
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
