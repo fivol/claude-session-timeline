@@ -86,14 +86,25 @@ document.addEventListener('mouseup', () => {
 document.addEventListener('mousemove', (e) => {
   const tip = document.getElementById('tip');
   const cursor = document.getElementById('axiscursor');
+  // Any element carrying a data-tip explanation (stat pills, per-session meta,
+  // group stats) shows it verbatim — takes priority over the timeline crosshair.
+  const explain = e.target.closest('[data-tip]');
+  if (explain) {
+    if (cursor) cursor.style.display = 'none';
+    showTip(explain.getAttribute('data-tip'), e, 320);
+    return;
+  }
   const cell = e.target.closest('.hd[data-k]');
   if (cell) {
     if (cursor) cursor.style.display = 'none';
     const k = cell.dataset.k, info = dayInfo[k];
-    const lines = [`<b>${k}</b>`];
+    const lines = [`<strong>${k}</strong>`];
     if (info) {
       lines.push(`${info.sessions.size} session${info.sessions.size > 1 ? 's' : ''} · ${info.dirs.size} dir${info.dirs.size > 1 ? 's' : ''}`);
-      lines.push(`agent-hours ${dur(info.agentMs)} · user ${dur(info.userMs)}`);
+      // Stacked, work-hours first and highlighted, then agent-hours, then user.
+      lines.push(`<span class="tipwork">work-hours ${dur(info.workMs || 0)}</span>`);
+      lines.push(`agent-hours ${dur(info.agentMs)}`);
+      lines.push(`user ${dur(info.userMs)}`);
       lines.push(`${info.prompts} prompt${info.prompts === 1 ? '' : 's'}`);
     } else lines.push('no activity');
     showTip(lines.join('<br>'), e, 190);

@@ -4,7 +4,7 @@ set -e
 
 LABEL="com.claude-session-timeline"
 DIR="$(cd "$(dirname "$0")/.." && pwd)"   # project root (this script lives in scripts/)
-PORT="${PORT:-4177}"
+PORT="${PORT:-5555}"
 
 NODE="$(command -v node || true)"
 if [ -z "$NODE" ]; then

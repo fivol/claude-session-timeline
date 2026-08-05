@@ -25,3 +25,22 @@ function dur(msVal) {
 function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
+
+// Make a string safe to sit inside a double-quoted HTML attribute while keeping
+// any inline markup (e.g. <br>, <b>) intact — used for the data-tip explanations,
+// which are rendered back as innerHTML by showTip(). Only " and & need escaping;
+// '<' is legal inside an attribute value.
+function attrTip(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+// Turn a model id into a short label: claude-opus-4-8 → "Opus 4.8", claude-opus-5
+// → "Opus 5", claude-haiku-4-5-20251001 → "Haiku 4.5". Unknown shapes degrade
+// gracefully (prefix + date suffix stripped, dashes shown as spaces).
+function prettyModel(id) {
+  if (!id) return '';
+  const clean = String(id).replace(/^claude-/, '').replace(/-\d{6,}$/, '');
+  const m = clean.match(/^([a-z]+)-([\d-]+)$/i);
+  if (m) return m[1].charAt(0).toUpperCase() + m[1].slice(1) + ' ' + m[2].replace(/-/g, '.');
+  return clean.replace(/-/g, ' ');
+}

@@ -20,7 +20,8 @@ window.addEventListener('popstate', () => history.pushState(null, '', location.h
 
 // Keep the "now" edge moving while following live.
 setInterval(() => {
-  if (view && view.follow) { const span = view.tMax - view.tMin; view.tMax = Date.now(); view.tMin = view.tMax - span; }
+  if (view && activePreset === 'today') { view.tMin = localMidnight(Date.now()); view.tMax = Date.now(); }
+  else if (view && view.follow) { const span = view.tMax - view.tMin; view.tMax = Date.now(); view.tMin = view.tMax - span; }
   draw();
 }, 5000);
 

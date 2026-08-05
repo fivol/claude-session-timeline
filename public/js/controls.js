@@ -9,8 +9,13 @@ function applyPreset(key) {
   activePreset = key;
   daySel = null;
   const now = Date.now();
-  const p = PRESETS.find((x) => x.key === key);
-  view = { tMin: p.ms ? now - p.ms : globalMin(), tMax: now, follow: true };
+  if (key === 'today') {
+    // Local midnight → now; the right edge is kept at "now" by the live tick (main.js).
+    view = { tMin: localMidnight(now), tMax: now, follow: false };
+  } else {
+    const p = PRESETS.find((x) => x.key === key);
+    view = { tMin: p.ms ? now - p.ms : globalMin(), tMax: now, follow: true };
+  }
   buildWindows(); renderHeat(); draw();
 }
 

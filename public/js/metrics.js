@@ -51,3 +51,32 @@ function concurrency(sessions, tMin, tMax) {
   const avg = winDur > 0 ? prof.integ[prof.integ.length - 1] / winDur : 0;
   return { max, avg, union };
 }
+
+// Gap up to which two work blocks are treated as one continuous sitting: shorter
+// pauses (reading, thinking, a quick glance away) stay inside the block; a longer
+// gap ("away from the desk") splits it.
+const WORK_BRIDGE_MS = 15 * 60_000;
+
+// "Working with agents" wall-clock: the union of every session's agent-working AND
+// user reading/typing spans, clipped to [tMin,tMax], with gaps shorter than
+// bridgeMs merged over (the bridged gap itself counts as work time). This is an
+// approximation of how long the user is actually engaged with agents — agent-active
+// time alone misses the reading/typing between turns, and summing the two lanes
+// double-counts none of the idle glue in between. Returns disjoint [a,b] intervals.
+function workIntervals(sessions, tMin, tMax, bridgeMs = WORK_BRIDGE_MS) {
+  const iv = [];
+  for (const s of sessions) for (const sp of s.spans) {
+    if (sp.lane !== 'agent' && sp.lane !== 'user') continue;
+    const a = Math.max(sp.start, tMin), b = Math.min(sp.end, tMax);
+    if (b > a) iv.push([a, b]);
+  }
+  iv.sort((x, y) => x[0] - y[0]);
+  const merged = [];
+  for (const [a, b] of iv) {
+    const last = merged[merged.length - 1];
+    if (last && a - last[1] <= bridgeMs) last[1] = Math.max(last[1], b);
+    else merged.push([a, b]);
+  }
+  return merged;
+}
+const sumIntervals = (iv) => iv.reduce((x, [a, b]) => x + (b - a), 0);

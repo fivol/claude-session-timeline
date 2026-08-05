@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { collectData } from './lib/scan.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_PORT = 4177;
+const DEFAULT_PORT = 5555;
 const ENV_PORT = process.env.PORT ? Number(process.env.PORT) : null;
 const HOME = os.homedir();
 const WATCH_DIRS = [

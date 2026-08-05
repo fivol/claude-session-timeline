@@ -1,5 +1,6 @@
 // Shared, mutable app state (classic scripts share one global scope).
 const PRESETS = [
+  { key: 'today', label: 'Today', ms: null },   // local midnight → now (special-cased in applyPreset)
   { key: '1h', label: '1h', ms: 3600e3 },
   { key: '2h', label: '2h', ms: 2 * 3600e3 },
   { key: '4h', label: '4h', ms: 4 * 3600e3 },
@@ -14,7 +15,8 @@ let activePreset = '24h';
 let view = null;                    // { tMin, tMax, follow }
 let data = { groups: [] };
 const expanded = new Set();         // session ids with subagents shown
-const collapsedGroups = new Set();  // cwd of collapsed groups
+const collapsedGroups = new Set();  // cwd of collapsed groups (pure UI fold — does NOT filter stats)
+const hiddenDirs = new Set();       // cwd unchecked in the directory filter → excluded from stats, chart, heatmap & timeline
 let selection = null;               // time-range selection (drag on timeline) → stats scope
 let chartState = null;              // { prof, W, tMin, tMax } for hover
 let dayInfo = {};                   // 'YYYY-MM-DD' -> { agentMs, userMs, sessions:Set, dirs:Set, prompts }

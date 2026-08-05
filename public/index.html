@@ -15,7 +15,10 @@
       <div class="spacer"></div>
       <div class="live"><span class="dot" id="livedot"></span><span id="livetext">connecting…</span></div>
     </header>
-    <div class="heat" id="heat"></div>
+    <div class="topmid">
+      <div class="dirfilter" id="dirfilter"></div>
+      <div class="heat" id="heat"></div>
+    </div>
     <div class="legend">
       <span><i class="swatch" style="background:var(--agent)"></i>agent working</span>
       <span><i class="swatch" style="background:repeating-linear-gradient(45deg,var(--user),var(--user) 3px,transparent 3px,transparent 6px)"></i>user reading / typing</span>
@@ -33,6 +36,7 @@
   <script src="js/state.js"></script>
   <script src="js/metrics.js"></script>
   <script src="js/heatmap.js"></script>
+  <script src="js/dirfilter.js"></script>
   <script src="js/controls.js"></script>
   <script src="js/render.js"></script>
   <script src="js/interactions.js"></script>
