@@ -26,7 +26,7 @@ setInterval(() => {
 }, 5000);
 
 renderHeat();
-applyPreset('24h');
+applyPreset('today');
 fetchData();
 // `?nostream` skips the live SSE connection (used for static rendering / screenshots).
 if (!location.search.includes('nostream')) connect();

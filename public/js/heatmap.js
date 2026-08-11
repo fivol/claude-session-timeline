@@ -44,7 +44,7 @@ function renderHeat() {
     renderHeat();
   });
   const reset = el.querySelector('[data-reset]');
-  if (reset) reset.onclick = () => applyPreset('24h');
+  if (reset) reset.onclick = () => applyPreset('today');
 }
 
 // Open a day (or day range) as the active view window.

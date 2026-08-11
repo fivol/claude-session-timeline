@@ -92,9 +92,9 @@ function renderChart(sessions, tMin, tMax, now) {
   const box = $('#chart');
   if (!sessions.length) { box.innerHTML = ''; chartState = null; return; }
   const span = tMax - tMin;
-  // Fixed 1-minute averaging window, independent of zoom: the hovered value reads
-  // as "how many agents worked on average over the surrounding minute" at any scale.
-  const W = 60e3;
+  // Fixed 5-minute averaging window, independent of zoom: the hovered value reads
+  // as "how many agents worked on average over the surrounding 5 minutes" at any scale.
+  const W = 5 * 60e3;
   const prof = concurrencyProfile(sessions, tMin, tMax);
   chartState = { prof, W, tMin, tMax };
   const N = 240, H = 64, WIDTH = 1000;
@@ -116,17 +116,16 @@ function renderChart(sessions, tMin, tMax, now) {
   area += `L ${WIDTH} ${H} Z`;
   const nowX = (now >= tMin && now <= tMax) ? (pct(now, tMin, tMax) / 100) * WIDTH : null;
   const nowMark = nowX !== null ? `<line x1="${nowX.toFixed(1)}" y1="0" x2="${nowX.toFixed(1)}" y2="${H}" stroke="var(--now)" stroke-width="2"/>` : '';
-  // Vertical legend: horizontal gridlines at whole agent-count levels (thinned to
-  // ~4), so a spike's height reads as "N agents". Peak (exact) stays in the label.
+  // Horizontal reference gridlines at whole agent-count levels (thinned to ~4);
+  // the exact peak stays in the label. No numeric labels — lines only.
   const step = Math.ceil(niceMax / 4);
   const levels = [];
   for (let k = step; k <= niceMax; k += step) levels.push(k);
   const grid = levels.map((k) => `<line x1="0" y1="${y(k)}" x2="${WIDTH}" y2="${y(k)}" stroke="var(--grid)" stroke-width="0.75"/>`).join('');
-  const yLabels = levels.map((k) => `<span style="top:${y(k)}px">${k}</span>`).join('');
   box.innerHTML =
     `<div class="chart-row">` +
       `<div class="label-col"><span class="t">avg ${avgY.toFixed(2)} · peak ${maxY.toFixed(maxY >= 10 ? 0 : 1)}</span><span class="s">window ${dur(W)}</span></div>` +
-      `<div class="track chart"><div class="yaxis">${yLabels}</div><svg viewBox="0 0 ${WIDTH} ${H}" preserveAspectRatio="none">` +
+      `<div class="track chart"><svg viewBox="0 0 ${WIDTH} ${H}" preserveAspectRatio="none">` +
         `<path d="${area}" fill="var(--agent)" opacity="0.28"/>` + grid +
         `<path d="${line}" fill="none" stroke="var(--agent)" stroke-width="1.5"/>` + nowMark +
       `</svg></div>` +
@@ -152,8 +151,8 @@ function statsSessions(a, b) {
 const STAT_HELP = {
   window: 'The time range every stat below covers — the current visible window. Drag across the timeline to scope them to a selection instead.',
   selection: 'Stats cover just this drag-selected range. Click the timeline to clear it and go back to the whole window.',
-  sessions: 'Count of sessions with any activity inside the range — only in open (unfolded) directories.',
-  directories: 'Distinct working directories among those sessions (open groups only).',
+  sessions: 'Count of sessions with any activity inside the range, across the directories ticked in the filter.',
+  directories: 'Distinct working directories among those sessions (ticked in the directory filter).',
   'max parallel': 'The most sessions with an agent working at the very same instant, anywhere in the range.',
   'avg parallel': 'Time-weighted mean number of agents working at once = agent-hours ÷ range length, so idle time pulls it down.',
   'avg while active': 'Mean agents working at once, counting only the time at least one was active = agent-hours ÷ any-agent-active.',
